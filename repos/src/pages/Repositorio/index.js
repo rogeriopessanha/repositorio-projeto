@@ -1,30 +1,63 @@
+import React, { useState, useEffect } from 'react';
+import { Container, Owener, Loading, BackButton } from './styles';
+import {FaArrowLeft} from 'react-icons/fa'
+import api from '../../services/api';
 
+export default function Repositorio({ match }) {
 
-import React, {useState, useEffect} from "react";
-import { Container } from "./styles";
-import api from '../../services/api' 
+  const [repositorio, setRepositorio] = useState({});
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
 
-export default function Repositorio({match}) {
+    async function load() {
+      const nomeRepo = decodeURIComponent(match.params.repositorio);
 
-    useEffect(() => {
-        async function load() {
-            const nomeRepo = decodeURIComponent(match.params.Repositorio)
+      const [repositorioData, issuesData] = await Promise.all([
+        api.get(`/repos/${nomeRepo}`),
+        api.get(`/repos/${nomeRepo}/issues`, {
+          params: {
+            state: 'open',
+            per_page: 5
+          }
+        })
+      ]);
 
-            await Promise.all([
-                api.get(`/repos/${nomeRepo}`),
-                api.get(`/repos/${nomeRepo}/issues`)
-            ])
+      setRepositorio(repositorioData.data);
+      setIssues(issuesData.data);
+      setLoading(false);
 
-        }
+    }
 
-        load()
-        
-    }, [])
+    load();
 
-    return(
-        <Container>
-            
-        </Container>
+  }, [match.params.repositorio]);
+
+  if (loading) {
+
+    return (
+      <Loading>
+        <h1>Carregando...</h1>
+      </Loading>
     )
+
+  }
+
+  return (
+    <Container>
+      <BackButton to='/'>
+        <FaArrowLeft color='#000' size={35}/>
+      </BackButton>
+      <Owener>
+        <img
+          src={repositorio.owner.avatar_url}
+          alt={repositorio.owner.login}
+        />
+
+        <h1>{repositorio.name}</h1>
+        <p>{repositorio.description}</p>
+      </Owener>
+    </Container>
+  )
 }
