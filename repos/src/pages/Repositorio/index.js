@@ -1,9 +1,30 @@
 
 
-import React from "react";
+import React, {useState, useEffect} from "react";
+import { Container } from "./styles";
+import api from '../../services/api' 
 
-export default function Repositorio() {
+
+export default function Repositorio({match}) {
+
+    useEffect(() => {
+        async function load() {
+            const nomeRepo = decodeURIComponent(match.params.Repositorio)
+
+            await Promise.all([
+                api.get(`/repos/${nomeRepo}`),
+                api.get(`/repos/${nomeRepo}/issues`)
+            ])
+
+        }
+
+        load()
+        
+    }, [])
+
     return(
-        <h1>Repositorio</h1>
+        <Container>
+            
+        </Container>
     )
 }
